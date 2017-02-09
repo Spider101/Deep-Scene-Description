@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 import urllib
 import pandas as pd
 import json
-from os.path import isfile
+from os.path import isfile, join
 import requests
 import pdb
 
@@ -156,12 +156,6 @@ def getClipData(clip_dict):
         num_pages += 1
         print("{0} pages scraped".format(num_pages), end="\r",)
 
-    with open(clip_json_fname, "r") as f:
-        genre_data = json.load(f)
-        pdb.set_trace()
-        genre_df = pd.DataFrame(genre_data).T
-        clip_df = pd.DataFrame(clip_dict).T
-
     return clip_dict
 
 
@@ -173,20 +167,24 @@ if __name__ == '__main__':
     video_json_fname = "vids_urls.json"
     clip_dataset_fname = "clip_dataset.json"
 
+    clip_json_path = join("..", "data", clip_json_fname)
+    video_json_path = join("..", "data", video_json_fname)
+    clip_dataset_path = join("..", "data", clip_dataset_fname)
+
     #check if data store for the 'klipd' dataset exists, therwise create it
-    if not isfile(clip_dataset_fname):
+    if not isfile(clip_dataset_path):
 
         #check if data store for the urls of the videos for each clip exists,
         #otherwise create one
-        if not isfile(video_json_fname):
+        if not isfile(video_json_path):
 
             #check if data store for the urls of each clip detail page exists,
             #otherwise create one
-            if not isfile(clip_json_fname):
+            if not isfile(clip_json_path):
 
                 #creating data store for urls of each clip detail page
                 print("\nNo data store for clips url list exist. Building data store..")
-                with open(clip_json_fname, "w") as f:
+                with open(clip_json_path, "w") as f:
                     genre_url_list = getGenreLinks(url)
                     clip_url_list = getMovieLinks(genre_url_list)
                     json.dump(clip_url_list, f)
@@ -195,13 +193,13 @@ if __name__ == '__main__':
             #data store for the urls of each clip detail page exists
             else:
                 print("\nLoading list of clip urls..")
-                with open(clip_json_fname, "r") as f:
+                with open(clip_json_path, "r") as f:
                     clip_url_list = json.load(f)
                 print("Clip urls list loaded!")
 
             #creating data store for the urls of the videos for each clip
             print("\nNo data store for video urls exist. Building data store..")
-            with open(video_json_fname, "w") as f:
+            with open(video_json_path, "w") as f:
                 vid_dict = getVideoUrls(clip_url_list)
                 json.dump(vid_dict, f)
             print("List of video URLs scraped and data store built!")
@@ -209,20 +207,20 @@ if __name__ == '__main__':
         #data store for the urls of the videos for each clip exists
         else:
             print("\nLoading list of video urls..")
-            with open(video_json_fname, "r") as f:
+            with open(video_json_path, "r") as f:
                 vid_dict = json.load(f)
             print("List of video urls loaded!")
 
-            #creating data store for the 'klipd' dataset
-            print("\nCreating final klipd dataset..")
-            clip_dataset = getClipData(vid_dict["success"])
-            with open(clip_dataset_fname, "w") as f:
-                json.dump(clip_dataset, f)
-            print("Klipd dataset creation complete!")
+        #creating data store for the 'klipd' dataset
+        print("\nCreating final klipd dataset..")
+        clip_dataset = getClipData(vid_dict["success"])
+        with open(clip_dataset_path, "w") as f:
+            json.dump(clip_dataset, f)
+        print("Klipd dataset creation complete!")
     
     #data store for the 'klipd' data exists
     else:
         print("\nLoading Klipd dataset ..")
-        with open(clip_dataset_fname, "r") as f:
+        with open(clip_dataset_path, "r") as f:
             klipd_dataset = json.load(f)
         print("Klipd dataset loaded!")
