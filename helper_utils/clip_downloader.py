@@ -13,32 +13,33 @@ import json
 import pdb
 import os
 
+klipd_vid_repo_path = join("..", "data", "clips")
+
 '''downloads the media associated with the url passed as parameter'''
 def downloadVideo(item):
     #pdb.set_trace()
     idx = item[0]
     video_url = item[1]["vid_url"]
-    os.system("wget -O " + "../../klipd_data/clips/clip_" + str(idx) + ".mp4 " + video_url)
+    os.system("wget -O " + join(klipd_vid_repo_path, "clip_" + str(idx) + ".mp4 ") + video_url)
 
 if __name__ == '__main__':
     
     pool = Pool(16)
 
     #relevant path names and urls
-    video_json_fname = "vids_urls.json"
-    klipd_vid_repo = "../../klipd_data"
+    video_json_path = join("..", "data", "vids_urls.json")
     
     #check if data store for clip video urls exist
-    if isfile(video_json_fname):
-        with open(video_json_fname, "r") as f:
+    if isfile(video_json_path):
+        with open(video_json_path, "r") as f:
             video_dict = json.load(f)
 
             #check if the required repo directory for the videos exists
-            if not isdir(klipd_vid_repo):
-                os.mkdir(klipd_vid_repo)
-                os.mkdir(join(klipd_vid_repo, "clips"))
+            if not isdir(klipd_vid_repo_path):
+                os.mkdir(klipd_vid_repo_path)
+                #os.mkdir(join(klipd_vid_repo, "clips"))
 
-            for item in video_dict["success"].items():
-                downloadVideo(item)
-            #pool.map(downloadVideo, video_dict["success"].items())
+            '''for item in video_dict["success"].items():
+                downloadVideo(item, klipd_vid_repo_path)'''
+            pool.map(downloadVideo, video_dict["success"].items())
             
